@@ -88,7 +88,8 @@ export function InfluenceChordChart({ members, matrix }: InfluenceChordChartProp
             },
           },
         }}
-        tooltip={({ ribbon }) => {
+        // @ts-expect-error tooltip prop exists at runtime but missing from @nivo/chord types
+        tooltip={({ ribbon }: { ribbon: { source: { index: number }; target: { index: number } } }) => {
           if (!ribbon) return null
           const source = members[ribbon.source.index]
           const target = members[ribbon.target.index]

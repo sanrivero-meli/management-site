@@ -95,7 +95,7 @@ export async function updateTodo(id: string, formData: FormData) {
   const dueDate = formData.get('due_date')
 
   if (title !== null) data.title = title as string
-  if (completed !== null) data.completed = completed === 'true' || completed === true
+  if (completed !== null) data.completed = completed === 'true'
   if (dueDate !== null) data.due_date = dueDate as string | null
 
   const { error } = await supabase

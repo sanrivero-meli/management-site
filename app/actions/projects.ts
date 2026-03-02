@@ -42,7 +42,7 @@ export async function getProjects() {
       acc[assignment.project_id].push({
         id: assignment.team_member_id,
         team_member_id: assignment.team_member_id,
-        team_members: assignment.team_members as { id: string; name: string }
+        team_members: assignment.team_members as unknown as { id: string; name: string }
       })
     }
     return acc
@@ -145,12 +145,12 @@ export async function updateProject(id: string, formData: FormData) {
   if (scope !== null) data.scope = scope as string | null
   if (jira_link !== null) data.jira_link = jira_link as string | null
   if (status) data.status = status as Project['status']
-  if (priority !== null) data.priority = (priority as string) || null
-  if (category !== null) data.category = (category as string) || null
-  if (squad !== null) data.squad = (squad as string) || null
+  if (priority !== null) data.priority = ((priority as string) || null) as Project['priority']
+  if (category !== null) data.category = ((category as string) || null) as Project['category']
+  if (squad !== null) data.squad = ((squad as string) || null) as Project['squad']
   if (tagsStr !== null) data.tags = tagsStr ? JSON.parse(tagsStr as string) : []
   if (ownersStr !== null) data.owners = ownersStr ? JSON.parse(ownersStr as string) : []
-  if (product_owner !== null) data.product_owner = (product_owner as string) || null
+  if (product_owner !== null) data.product_owner = ((product_owner as string) || null) as Project['product_owner']
   if (startDate !== null) data.start_date = startDate as string | null
   if (endDate !== null) data.end_date = endDate as string | null
   if (estimatedStr !== null) {
@@ -210,9 +210,9 @@ function parseDate(dateStr: string | null | undefined): string | null {
 // Helper function to map status
 function mapStatus(status: string): Project['status'] {
   const statusMap: Record<string, Project['status']> = {
-    'In Progress': 'Active',
-    'To Do': 'Planning',
-    'Done': 'Complete',
+    'In Progress': 'Doing',
+    'To Do': 'To Do',
+    'Done': 'Done',
   }
   return statusMap[status] || 'Planning'
 }
@@ -625,9 +625,13 @@ export async function bulkImportProjectsAndAssignments(
       }
 
       project = newProject
-      projects.push(project)
-      projectsCreated++
+      if (project) {
+        projects.push(project)
+        projectsCreated++
+      }
     }
+
+    if (!project) continue
 
     // Create assignment for Owner 1
     if (owner1 && sprints1 !== null && sprints1 > 0) {

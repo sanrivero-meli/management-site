@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 interface InfluenceSectionProps {
   teamMemberId: string
   teamMemberName: string
-  otherMembers: TeamMember[]
+  otherMembers: Pick<TeamMember, 'id' | 'name' | 'email'>[]
   influenceRelationships: MemberInfluence[]
 }
 

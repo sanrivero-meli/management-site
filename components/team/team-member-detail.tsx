@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateTeamMember, deleteTeamMember } from '@/app/actions/team'
-import type { TeamMember } from '@/types'
+import type { TeamMember, Goal, Feedback, Skills, MemberPerformanceProject, Project, MemberInfluence } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,7 +19,6 @@ import { FeedbackSection } from './feedback-section'
 import { SkillsSection } from './skills-section'
 import { PerformanceProjectsSection } from './performance-projects-section'
 import { InfluenceSection } from './influence-section'
-import type { Goal, Feedback, Skills, MemberPerformanceProject, Project, MemberInfluence, TeamMember } from '@/types'
 
 interface TeamMemberDetailProps {
   member: TeamMember
@@ -29,7 +28,7 @@ interface TeamMemberDetailProps {
   performanceProjects?: MemberPerformanceProject[]
   projects?: Project[]
   influenceRelationships?: MemberInfluence[]
-  otherMembers?: TeamMember[]
+  otherMembers?: Pick<TeamMember, 'id' | 'name' | 'email'>[]
 }
 
 export function TeamMemberDetail({ member, goals = [], feedback = [], skills = null, performanceProjects = [], projects = [], influenceRelationships = [], otherMembers = [] }: TeamMemberDetailProps) {
