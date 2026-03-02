@@ -41,6 +41,16 @@
     "zod": "^4.3.5",
     "zustand": "^5.0.10"
   },
+  "overrides": {
+    "@nivo/chord": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@nivo/core": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
+  },
   "devDependencies": {
     "@react-grab/cursor": "^0.1.16",
     "@tailwindcss/postcss": "^4",
