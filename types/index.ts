@@ -40,7 +40,17 @@ export type Feedback = {
 }
 
 // Project constants
-export const PROJECT_STATUSES = ['Planning', 'To Do', 'Doing', 'Paused', 'Done', 'Cancelled'] as const
+export const PROJECT_STATUSES = ['To Do', 'IN Poroto', 'CHECK POROTO', 'NO', 'OUT poroto', 'Check PR', 'Cancelled'] as const
+
+export const JIRA_TRANSITION_IDS: Record<string, string> = {
+  'To Do': '641',
+  'IN Poroto': '701',
+  'CHECK POROTO': '711',
+  'NO': '721',
+  'OUT poroto': '731',
+  'Check PR': '791',
+  'Cancelled': '771',
+}
 export const PROJECT_PRIORITIES = ['HIT', 'Carryover', 'BAU', 'World Class', 'Wishlist', 'Quality'] as const
 export const PROJECT_CATEGORIES = ['Legal', 'Delivery', 'Research', 'Support'] as const
 export const PROJECT_SQUADS = ['Long Term', 'Short Term', 'Backoffice', 'Cross'] as const
@@ -60,6 +70,7 @@ export type Project = {
   description: string | null
   scope: string | null
   jira_link: string | null
+  jira_key: string | null
   status: ProjectStatus
   priority: ProjectPriority | null
   category: ProjectCategory | null
@@ -70,6 +81,10 @@ export type Project = {
   start_date: string | null
   end_date: string | null
   estimated: number | null
+  required_skills: string[] | null
+  skill_requirements: SkillRequirement[] | null
+  team_size: number | null // 1-2 (null = auto-suggest)
+  complexity: number | null // 1-3
   created_at?: string
   updated_at?: string
 }
@@ -80,6 +95,7 @@ export type Assignment = {
   team_member_id: string
   sprints_allocated: number
   quarter: string
+  role: AssignmentRole | null
   notes: string | null
   created_at?: string
   updated_at?: string
@@ -311,4 +327,60 @@ export interface Todo {
   due_date: string | null
   created_at: string
   updated_at: string
+}
+
+// Allocation engine types
+export type SkillRequirement = {
+  skill: string
+  importance: 'must_have' | 'nice_to_have'
+}
+
+export type AssignmentRole = 'lead' | 'contributor'
+
+// Planning types
+export const SPRINTS_PER_QUARTER = 12
+
+export const QUARTERS = [
+  'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025',
+  'Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026',
+] as const
+
+export const COMPLEXITY_LABELS: Record<number, string> = {
+  1: 'Low',
+  2: 'Medium',
+  3: 'High',
+}
+
+export type TeamMemberWithSkills = TeamMember & {
+  skills: Skills | null
+}
+
+export type AssignmentWithDetails = Assignment & {
+  project?: { name: string; jira_key: string | null; priority: ProjectPriority | null }
+  team_member?: { name: string; seniority: string; level: number }
+}
+
+export type SuggestedAssignment = {
+  project_id: string
+  team_member_id: string
+  sprints_allocated: number
+  confidence_score: number // 0-1
+  role: AssignmentRole
+  match_details: {
+    skill_score: number
+    must_have_coverage: number
+    capacity_remaining: number
+    seniority_fit: string
+    motivation_bonus: number
+    experience_bonus: number
+    complementarity_score: number
+  }
+}
+
+export type JiraEpic = {
+  id: string
+  key: string
+  summary: string
+  status: string
+  priority: string
 }

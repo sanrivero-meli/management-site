@@ -1,22 +1,13 @@
-import { getTeamMembers } from '@/app/actions/team'
-import { getProjects } from '@/app/actions/projects'
-import { getCapacityByQuarter, getAssignments } from '@/app/actions/assignments'
-import { PlanningView } from '@/components/planning/planning-view'
-
-function getQuarters() {
-  const quarters: string[] = []
-  const currentYear = new Date().getFullYear()
-  const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1
-
-  // Generate quarters for current and next year
-  for (let year = currentYear; year <= currentYear + 1; year++) {
-    for (let q = year === currentYear ? currentQuarter : 1; q <= 4; q++) {
-      quarters.push(`Q${q} ${year}`)
-    }
-  }
-
-  return quarters
-}
+import {
+  getTeamWithSkills,
+  getQuarterAssignments,
+  getQuarterCapacity,
+  getProjectsForPlanning,
+  getAllPerformanceHistory,
+  getAllInfluenceRelationships,
+} from '@/app/actions/planning'
+import { PlanningPageClient } from '@/components/planning/planning-page-client'
+import type { MemberPerformanceProject } from '@/types'
 
 export default async function PlanningPage({
   searchParams,
@@ -24,25 +15,42 @@ export default async function PlanningPage({
   searchParams: Promise<{ quarter?: string }>
 }) {
   const params = await searchParams
-  const selectedQuarter = params.quarter || `Q${Math.floor(new Date().getMonth() / 3) + 1} ${new Date().getFullYear()}`
+  const now = new Date()
+  const currentQuarter = `Q${Math.ceil((now.getMonth() + 1) / 3)} ${now.getFullYear()}`
+  const quarter = params.quarter || currentQuarter
 
-  const [teamMembers, projects, capacity, assignments] = await Promise.all([
-    getTeamMembers(),
-    getProjects(),
-    getCapacityByQuarter(selectedQuarter).catch(() => []),
-    getAssignments(selectedQuarter).catch(() => []),
+  const [teamWithSkills, assignments, capacity, projects, performanceHistory, influenceMap] = await Promise.all([
+    getTeamWithSkills(),
+    getQuarterAssignments(quarter),
+    getQuarterCapacity(quarter),
+    getProjectsForPlanning(),
+    getAllPerformanceHistory(),
+    getAllInfluenceRelationships(),
   ])
 
-  const quarters = getQuarters()
+  // Serialize Maps to plain objects for client component
+  const performanceHistorySerialized: Record<string, MemberPerformanceProject[]> = {}
+  performanceHistory.forEach((value, key) => {
+    performanceHistorySerialized[key] = value
+  })
+
+  const influenceMapSerialized: Record<string, Record<string, number>> = {}
+  influenceMap.forEach((targets, source) => {
+    influenceMapSerialized[source] = {}
+    targets.forEach((level, target) => {
+      influenceMapSerialized[source][target] = level
+    })
+  })
 
   return (
-    <PlanningView
-      teamMembers={teamMembers}
-      projects={projects}
-      capacity={capacity}
+    <PlanningPageClient
+      quarter={quarter}
+      teamWithSkills={teamWithSkills}
       assignments={assignments}
-      quarters={quarters}
-      selectedQuarter={selectedQuarter}
+      capacity={capacity}
+      projects={projects}
+      performanceHistory={performanceHistorySerialized}
+      influenceMap={influenceMapSerialized}
     />
   )
 }
