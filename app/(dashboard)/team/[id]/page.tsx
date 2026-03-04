@@ -4,7 +4,6 @@ import { getGoals } from '@/app/actions/goals'
 import { getFeedback } from '@/app/actions/feedback'
 import { getSkills } from '@/app/actions/skills'
 import { getPerformanceProjects } from '@/app/actions/performance-projects'
-import { getProjects } from '@/app/actions/projects'
 import { getInfluenceForMember, getOtherTeamMembers } from '@/app/actions/influence'
 import { TeamMemberDetail } from '@/components/team/team-member-detail'
 
@@ -16,13 +15,12 @@ export default async function TeamMemberDetailPage({
   const { id } = await params
   
   try {
-    const [member, goals, feedback, skills, performanceProjects, projects, influenceRelationships, otherMembers] = await Promise.all([
+    const [member, goals, feedback, skills, performanceProjects, influenceRelationships, otherMembers] = await Promise.all([
       getTeamMember(id),
       getGoals(id).catch(() => []),
       getFeedback(id).catch(() => []),
       getSkills(id).catch(() => null),
       getPerformanceProjects(id).catch(() => []),
-      getProjects().catch(() => []),
       getInfluenceForMember(id).catch(() => []),
       getOtherTeamMembers(id).catch(() => []),
     ])
@@ -33,7 +31,7 @@ export default async function TeamMemberDetailPage({
         feedback={feedback} 
         skills={skills}
         performanceProjects={performanceProjects}
-        projects={projects}
+        projects={[]}
         influenceRelationships={influenceRelationships}
         otherMembers={otherMembers}
       />

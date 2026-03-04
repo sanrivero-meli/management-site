@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPerformanceProject, updatePerformanceProject, deletePerformanceProject } from '@/app/actions/performance-projects'
-import { getProjects } from '@/app/actions/projects'
 import type { MemberPerformanceProject, Project } from '@/types'
 import { SKILL_LABELS } from '@/types'
 import { Button } from '@/components/ui/button'

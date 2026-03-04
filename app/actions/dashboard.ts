@@ -5,33 +5,12 @@ import { SKILL_CATEGORIES } from '@/types'
 
 export async function getDashboardMetrics() {
   const supabase = await createClient()
-  const currentYear = new Date().getFullYear()
-  const currentQuarter = Math.floor(new Date().getMonth() / 3) + 1
-  const currentQuarterStr = `Q${currentQuarter} ${currentYear}`
-
-  // Get team capacity utilization
-  const { data: assignments } = await supabase
-    .from('assignments')
-    .select('sprints_allocated, team_member_id')
-    .eq('quarter', currentQuarterStr)
-
-  const totalSprints = assignments?.reduce((sum, a) => sum + a.sprints_allocated, 0) || 0
-  const { data: teamMembers } = await supabase.from('team_members').select('id, name')
-  const totalCapacity = (teamMembers?.length || 0) * 12
-  const capacityUtilization = totalCapacity > 0 ? Math.round((totalSprints / totalCapacity) * 100) : 0
-
-  // Get projects with full details
-  const { data: projects } = await supabase.from('projects').select('id, name, status, end_date')
-  const projectsByStatus = projects?.reduce((acc, p) => {
-    acc[p.status] = (acc[p.status] || 0) + 1
-    return acc
-  }, {} as Record<string, number>) || {}
 
   // Get goals at risk (approaching target_date with status "Not Started" or "Blocked")
   const thirtyDaysFromNow = new Date()
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
   const today = new Date().toISOString().split('T')[0]
-  
+
   const { data: goalsAtRiskData } = await supabase
     .from('goals')
     .select('*')
@@ -131,15 +110,15 @@ export async function getDashboardMetrics() {
 
   // Get team skill averages by category
   const { data: allSkills } = await supabase.from('skills').select('*')
-  
+
   const teamSkillAverages: Record<string, number> = {}
-  
+
   if (allSkills && allSkills.length > 0) {
     Object.keys(SKILL_CATEGORIES).forEach((category) => {
       const skillKeys = SKILL_CATEGORIES[category as keyof typeof SKILL_CATEGORIES]
       let totalRating = 0
       let skillCount = 0
-      
+
       // For each team member's skills
       allSkills.forEach((memberSkills) => {
         skillKeys.forEach((skillKey) => {
@@ -150,9 +129,9 @@ export async function getDashboardMetrics() {
           }
         })
       })
-      
-      teamSkillAverages[category] = skillCount > 0 
-        ? Math.round((totalRating / skillCount) * 10) / 10 
+
+      teamSkillAverages[category] = skillCount > 0
+        ? Math.round((totalRating / skillCount) * 10) / 10
         : 0
     })
   }
@@ -215,48 +194,6 @@ export async function getDashboardMetrics() {
     })
   }
 
-  // Get upcoming deadlines (projects ending in 30 days)
-  const thirtyDaysFromNowDate = new Date()
-  thirtyDaysFromNowDate.setDate(thirtyDaysFromNowDate.getDate() + 30)
-  const upcomingDeadlines = projects?.filter(p => {
-    if (!p.end_date) return false
-    const endDate = new Date(p.end_date)
-    return endDate >= new Date() && endDate <= thirtyDaysFromNowDate
-  }).map(p => ({
-    id: p.id,
-    name: p.name,
-    end_date: p.end_date!,
-    status: p.status,
-  })) || []
-
-  // Get overdue projects (past end_date but not Complete)
-  const overdueProjects = projects?.filter(p => {
-    if (!p.end_date || p.status === 'Complete' || p.status === 'Cancelled') return false
-    return new Date(p.end_date) < new Date()
-  }).map(p => ({
-    id: p.id,
-    name: p.name,
-    end_date: p.end_date!,
-  })) || []
-
-  // Get overallocated members (>12 sprints/quarter)
-  const memberAllocations = new Map<string, number>()
-  assignments?.forEach(a => {
-    const current = memberAllocations.get(a.team_member_id) || 0
-    memberAllocations.set(a.team_member_id, current + a.sprints_allocated)
-  })
-
-  const overallocatedMembers = Array.from(memberAllocations.entries())
-    .filter(([_, allocated]) => allocated > 12)
-    .map(([memberId, allocated]) => {
-      const member = teamMembers?.find(m => m.id === memberId)
-      return {
-        name: member?.name || 'Unknown',
-        allocated,
-        capacity: 12,
-      }
-    })
-
   // Get feedback skill insights
   const { data: allFeedback } = await supabase
     .from('feedback')
@@ -285,18 +222,11 @@ export async function getDashboardMetrics() {
     .slice(0, 5)
 
   return {
-    capacityUtilization,
-    projectsByStatus,
     goalsAtRisk,
     avgMotivation,
     influenceDistribution,
     influenceRelationships: influenceMatrix,
-    totalProjects: projects?.length || 0,
     teamSkillAverages,
-    // New metrics
-    upcomingDeadlines,
-    overdueProjects,
-    overallocatedMembers,
     goalsByStatus,
     skillTrends,
     feedbackSkillHighlights: feedbackSkillHighlightsArray,

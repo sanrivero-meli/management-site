@@ -15,9 +15,8 @@ import {
   LogOut,
   Home,
   Users,
-  FolderKanban,
-  Calendar,
   CheckSquare,
+  Calendar,
   Menu,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -26,7 +25,6 @@ import type { User } from '@supabase/supabase-js'
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Team', href: '/team', icon: Users },
-  { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'Planning', href: '/planning', icon: Calendar },
   { name: 'Todos', href: '/todos', icon: CheckSquare },
 ]

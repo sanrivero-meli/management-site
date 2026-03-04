@@ -4,18 +4,17 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, X, Target, Users, Calendar } from 'lucide-react'
+import { AlertTriangle, X, Target, Users } from 'lucide-react'
 
 interface AlertBannerProps {
   goalsAtRisk: number
   lowMotivationMembers: Array<{ id: string; name: string; motivation_level: number }>
-  overdueProjects: Array<{ id: string; name: string; end_date: string }>
 }
 
-export function AlertBanner({ goalsAtRisk, lowMotivationMembers, overdueProjects }: AlertBannerProps) {
+export function AlertBanner({ goalsAtRisk, lowMotivationMembers }: AlertBannerProps) {
   const [isDismissed, setIsDismissed] = useState(false)
 
-  const hasAlerts = goalsAtRisk > 0 || lowMotivationMembers.length > 0 || overdueProjects.length > 0
+  const hasAlerts = goalsAtRisk > 0 || lowMotivationMembers.length > 0
 
   if (!hasAlerts || isDismissed) {
     return null
@@ -48,17 +47,6 @@ export function AlertBanner({ goalsAtRisk, lowMotivationMembers, overdueProjects
                       <strong>{lowMotivationMembers.length}</strong> team member{lowMotivationMembers.length !== 1 ? 's' : ''} with low motivation
                     </span>
                     <Link href="/team" aria-label="View members with low motivation" className="text-foreground hover:text-foreground hover:underline font-medium">
-                      View →
-                    </Link>
-                  </div>
-                )}
-                {overdueProjects.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-foreground">
-                      <strong>{overdueProjects.length}</strong> overdue project{overdueProjects.length !== 1 ? 's' : ''}
-                    </span>
-                    <Link href="/projects" aria-label="View overdue projects" className="text-foreground hover:text-foreground hover:underline font-medium">
                       View →
                     </Link>
                   </div>
